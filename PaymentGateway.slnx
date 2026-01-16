@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/API/">
+    <Project Path="PaymentGateway/PaymentGateway.csproj" />
+  </Folder>
+  <Folder Name="/Core/" />
+  <Folder Name="/Infrastructure/" />
+</Solution>

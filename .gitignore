@@ -1,0 +1,14 @@
+## Visual Studio Temp Files
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## Build Outputs (Standard for C#)
+[Bb]in/
+[Oo]bj/
+
+## Other common ignores
+.DS_Store
+*.log
