@@ -2,6 +2,10 @@
   <Folder Name="/API/">
     <Project Path="PaymentGateway/PaymentGateway.csproj" />
   </Folder>
-  <Folder Name="/Core/" />
-  <Folder Name="/Infrastructure/" />
+  <Folder Name="/Core/">
+    <Project Path="PaymentGate.Domain/PaymentGate.Domain.csproj" Id="c12bd7c2-9324-4a9d-9aea-3570b677adea" />
+  </Folder>
+  <Folder Name="/Infrastructure/">
+    <Project Path="PaymentGateway.Persistence/PaymentGateway.Persistence.csproj" Id="37302aee-55ed-4535-a07e-177675bd01ea" />
+  </Folder>
 </Solution>
