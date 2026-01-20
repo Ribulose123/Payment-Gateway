@@ -1,6 +1,8 @@
 ﻿
 
 using Microsoft.EntityFrameworkCore;
+using PaymentGate.Domain.Entites;
+using PaymentGate.Domain.Entities;
 
 namespace PaymentGateway.Persistence
 {
@@ -11,9 +13,27 @@ namespace PaymentGateway.Persistence
             
         }
 
+        protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+        {
+            configurationBuilder.Properties<decimal>()
+                .HavePrecision(18, 4);
+        }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Wallet>()
+                .Property(i => i.Balance)
+                .HasPrecision(18, 2);
         }
+
+        public DbSet<User> Users { get; set; }
+        public DbSet<Wallet> Wallets { get; set; }
+        public DbSet<Transaction> Transactions { get; set; }
+        public DbSet<Transfer> Transfers { get; set; }
+        public DbSet<FraudCheck> FraudChecks { get; set; }
+        public DbSet<Reversal> Reversals { get; set; }
+        public DbSet<Idempotency> Idempotencies { get; set; }
+        public DbSet<AuditLog> AuditLogs { get; set; }
     }
 }
