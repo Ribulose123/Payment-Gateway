@@ -70,6 +70,13 @@ namespace PaymentGate.Domain.Entites
             Status = TransferStatus.Failed;
         }
 
+        public void MarkPendingReview(string reason)
+        {
+            EnsurePending();
+            Description = reason;
+        }
+
+
         private void EnsurePending()
         {
             if (Status != TransferStatus.Pending)
