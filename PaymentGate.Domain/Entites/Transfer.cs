@@ -9,6 +9,8 @@ namespace PaymentGate.Domain.Entites
         public Guid SourceWalletId { get; private set; }   
         public Guid DestinationWalletId { get; private set; }
         public decimal Amount { get; private set; }
+        public decimal Fee { get; private set; }
+        public decimal TotalAmount => Amount + Fee;
         public string Currency { get; private set; } = string.Empty;
         public TransferStatus Status { get; private set; }
         public string? Description { get; private set; }
@@ -24,6 +26,7 @@ namespace PaymentGate.Domain.Entites
             Guid destinationWalletId,
             decimal amount,
             string currency,
+            decimal fee,
             string? description = null)
         {
             if (sourceWalletId == destinationWalletId)
@@ -31,6 +34,8 @@ namespace PaymentGate.Domain.Entites
 
             if (amount <= 0)
                 throw new ArgumentException("Amount must be greater than zero.");
+            if (fee <= 0)
+                throw new Exception("transfee must not be negative");
 
             if (string.IsNullOrWhiteSpace(currency))
                 throw new ArgumentException("Currency is required.");
@@ -40,6 +45,7 @@ namespace PaymentGate.Domain.Entites
             DestinationWalletId = destinationWalletId;
             Amount = amount;
             Currency = currency.ToUpper();
+            Fee = fee;
             Description = description;
 
             Status = TransferStatus.Pending;

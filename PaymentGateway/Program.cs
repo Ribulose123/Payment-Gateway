@@ -1,9 +1,13 @@
 using Microsoft.EntityFrameworkCore;
+using PaymentGate.Application.Interface;
+using PaymentGate.Application.Services;
 using PaymentGateway.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
+builder.Services.AddScoped<ITransferInterface, TransferServices>();
 
 //Db contection
 builder.Services.AddDbContext<PaymentGatewayDbCOntext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
