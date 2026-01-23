@@ -13,13 +13,16 @@ namespace PaymentGate.Application.Services
     {
         private readonly PaymentGatewayDbCOntext _context;
         private readonly IFraudPolicy _fraudPolicy;
+        private readonly IFeePolicy _feePolicy;
 
         public TransferServices(
             PaymentGatewayDbCOntext context,
-            IFraudPolicy fraudPolicy)
+            IFraudPolicy fraudPolicy,
+            IFeePolicy feePolicy)
         {
             _context = context;
             _fraudPolicy = fraudPolicy;
+            _feePolicy = feePolicy;
         }
 
         public async Task<TransferResponseDto> ExecuteTransferAsync(TransferRequestDto request)
@@ -80,7 +83,9 @@ namespace PaymentGate.Application.Services
                     destination.Currency != request.Currency)
                     throw new Exception("Currency mismatch");
 
-                if (source.Balance < request.Amount)
+                var feeResult = _feePolicy.Calculate(request.Amount, request.Currency);
+
+                if (source.Balance < feeResult.TotalDebit)
                     throw new Exception("Insufficient balance");
 
                 // 4️⃣ Create transfer
@@ -89,6 +94,7 @@ namespace PaymentGate.Application.Services
                     destination.WalletId,
                     request.Amount,
                     request.Currency,
+                    feeResult.Fee,
                     request.Description);
 
                 _context.Transfers.Add(transfer);
@@ -124,7 +130,7 @@ namespace PaymentGate.Application.Services
                 }
 
                 // 6️⃣ Debit source wallet + transaction
-                source.Debit(request.Amount);
+                source.Debit(feeResult.TotalDebit);
 
                 var debitTx = new Transaction(
                     walletId: source.WalletId,
