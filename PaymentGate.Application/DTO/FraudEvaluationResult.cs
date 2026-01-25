@@ -1,17 +1,36 @@
 ﻿using PaymentGate.Domain.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PaymentGate.Application.DTO
 {
     public class FraudEvaluationResult
     {
-        public decimal RiskScore { get; set; }
-        public FraudDecision Decision { get; set; }
-        public string Reason { get; set; } = string.Empty;
-    }
+        public decimal RiskScore { get; }
+        public FraudDecision Decision { get; }
+        public string Reason { get; }
 
+        private FraudEvaluationResult(
+            decimal riskScore,
+            FraudDecision decision,
+            string reason)
+        {
+            RiskScore = riskScore;
+            Decision = decision;
+            Reason = reason;
+        }
+
+        public static FraudEvaluationResult Approved(
+            decimal riskScore,
+            string reason) =>
+            new(riskScore, FraudDecision.Approved, reason);
+
+        public static FraudEvaluationResult Review(
+            decimal riskScore,
+            string reason) =>
+            new(riskScore, FraudDecision.Review, reason);
+
+        public static FraudEvaluationResult Rejected(
+            decimal riskScore,
+            string reason) =>
+            new(riskScore, FraudDecision.Rejected, reason);
+    }
 }
