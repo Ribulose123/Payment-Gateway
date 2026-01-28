@@ -7,12 +7,14 @@ using PaymentGateway.Persistence;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
+builder.Services.Configure<FxApiSettings>(builder.Configuration.GetSection("FxApi"));
 builder.Services.AddScoped<ITransferInterface, TransferServices>();
 builder.Services.AddScoped<IFraudPolicy, BasicFraudPolicy>();
 builder.Services.AddScoped<IFeePolicy, TieredFeePolicy>();
 builder.Services.AddScoped<ILimitPolicy, UserLimitPolicy>();
 builder.Services.AddScoped<IWalletService, WalletService> ();
+builder.Services.AddScoped<IFxService, OpenErFxService>();
+builder.Services.AddScoped<IWalletExchangeService, WalletExchangeService>();
 
 //Db contection
 builder.Services.AddDbContext<PaymentGatewayDbCOntext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
