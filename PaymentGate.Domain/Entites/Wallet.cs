@@ -39,6 +39,17 @@ namespace PaymentGate.Domain.Entites
             Balance -= amount;
         }
 
+        public static Wallet Create (Guid userId, string currency)
+        {
+            if (userId == Guid.Empty)
+                throw new Exception("Userid is expected");
+
+            if (string.IsNullOrWhiteSpace(currency))
+                throw new Exception("Currency is requried");
+
+            return new Wallet(userId, currency);
+        }
+
         public void Freeze()
         {
             Status = WalletStatus.Frozen;

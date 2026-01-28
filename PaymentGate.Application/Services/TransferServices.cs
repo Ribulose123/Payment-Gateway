@@ -14,19 +14,25 @@ namespace PaymentGate.Application.Services
         private readonly PaymentGatewayDbCOntext _context;
         private readonly IFraudPolicy _fraudPolicy;
         private readonly IFeePolicy _feePolicy;
+        private readonly ILimitPolicy _limitPolicy;
 
         public TransferServices(
             PaymentGatewayDbCOntext context,
             IFraudPolicy fraudPolicy,
-            IFeePolicy feePolicy)
+            IFeePolicy feePolicy,
+            ILimitPolicy limitPolicy)
         {
             _context = context;
             _fraudPolicy = fraudPolicy;
             _feePolicy = feePolicy;
+            _limitPolicy = limitPolicy;
         }
 
         public async Task<TransferResponseDto> ExecuteTransferAsync(TransferRequestDto request)
         {
+          
+
+
             if (request.Amount <= 0)
                 throw new Exception("Amount must be greater than zero");
 
@@ -34,6 +40,7 @@ namespace PaymentGate.Application.Services
                 throw new Exception("Source and destination wallet cannot be the same");
 
             Idempotency? idem;
+
 
             using var tx = await _context.Database.BeginTransactionAsync();
 
@@ -68,6 +75,14 @@ namespace PaymentGate.Application.Services
 
                 _context.Idempotencies.Add(idem);
                 await _context.SaveChangesAsync();
+
+
+                var user = await _context.Users.FirstOrDefaultAsync(x => x.UserId == request.InitiatorId);
+
+                if (user == null)
+                    throw new Exception("User not found");
+
+                _limitPolicy.Validate(user, request.Amount);
 
                 // 3️⃣ Load wallets
                 var source = await _context.Wallets
@@ -135,7 +150,7 @@ namespace PaymentGate.Application.Services
                 var debitTx = new Transaction(
                     walletId: source.WalletId,
                     transferId: transfer.TransferId,
-                    amount: request.Amount,
+                    amount: feeResult.TotalDebit,
                     currency: request.Currency,
                     type: TransactionType.Debit,
                     reference: Guid.NewGuid().ToString()
@@ -153,7 +168,7 @@ namespace PaymentGate.Application.Services
                     transferId: transfer.TransferId,
                     amount: request.Amount,
                     currency: request.Currency,
-                    type: TransactionType.Debit,
+                    type: TransactionType.Credit,
                     reference: Guid.NewGuid().ToString()
                     );
 
@@ -182,6 +197,7 @@ namespace PaymentGate.Application.Services
                 };
 
                 idem.MarkAsCompleted(JsonSerializer.Serialize(response));
+                _limitPolicy.Consume(user, request.Amount);
                 await _context.SaveChangesAsync();
 
                 await tx.CommitAsync();

@@ -11,7 +11,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddScoped<ITransferInterface, TransferServices>();
 builder.Services.AddScoped<IFraudPolicy, BasicFraudPolicy>();
 builder.Services.AddScoped<IFeePolicy, TieredFeePolicy>();
-
+builder.Services.AddScoped<ILimitPolicy, UserLimitPolicy>();
+builder.Services.AddScoped<IWalletService, WalletService> ();
 
 //Db contection
 builder.Services.AddDbContext<PaymentGatewayDbCOntext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));

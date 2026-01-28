@@ -9,6 +9,11 @@ namespace PaymentGate.Domain.Entites
         public string Email { get; private set; } = string.Empty;
         public AccountStatus Status { get; private set; }
         public DateOnly CreatedAt { get; private set; }
+        public decimal DailyTransferLimit { get; private set; }
+        public decimal DailyLimitUsed { get; private set; }
+        public DateTime LastLimitResetUtc { get; private set; }
+
+        private const decimal DEFAULT_DAILY_LIMIT = 100_000m;
 
         private User() { }
 
@@ -17,6 +22,9 @@ namespace PaymentGate.Domain.Entites
             UserId = Guid.NewGuid();
             SetEmail(email);
             Status = AccountStatus.Active;
+            DailyTransferLimit = DEFAULT_DAILY_LIMIT;
+            DailyLimitUsed = 0;
+            LastLimitResetUtc = DateTime.UtcNow;
             CreatedAt = DateOnly.FromDateTime(DateTime.UtcNow);
         }
 
@@ -29,6 +37,36 @@ namespace PaymentGate.Domain.Entites
         {
             Status = AccountStatus.Active;
         }
+
+        public void ResetDailyLimit()
+        {
+            if(LastLimitResetUtc.Date !=  DateTime.UtcNow)
+            {
+                DailyLimitUsed = 0;
+                LastLimitResetUtc = DateTime.UtcNow;
+            }
+        }
+
+        public void ValidateDailyLimit (decimal amount)
+        {
+            if (DailyLimitUsed + amount > DailyTransferLimit)
+                throw new Exception("Daily transfer limit exceeded");
+        }
+
+        public void ConsumeDailyLimit(decimal amount)
+        {
+            DailyLimitUsed += amount;
+        }
+
+        public void UpdateDailyLimit(decimal newLimit)
+        {
+            if (newLimit <= 0)
+                throw new Exception("Limit must be positive");
+
+            DailyTransferLimit = newLimit;
+        }
+
+
 
         private void SetEmail(string email)
         {
