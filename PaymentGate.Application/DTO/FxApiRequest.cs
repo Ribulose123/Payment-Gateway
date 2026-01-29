@@ -4,6 +4,6 @@ namespace PaymentGate.Application.DTO
 {
     public class FxApiRequest
     {
-        public required Dictionary<string, decimal> Rates {set; get;}
+        public Dictionary<string, decimal> Rates { set; get; } = new();
     }
 }

@@ -1,4 +1,4 @@
-﻿using PaymentGate.Application.Policies;
+﻿using PaymentGate.Domain.ValueObjects;
 
 namespace PaymentGate.Application.Interface
 {

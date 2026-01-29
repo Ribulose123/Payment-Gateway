@@ -1,69 +1,77 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PaymentGate.Application.Interface;
-using PaymentGate.Domain.Entites;
-using PaymentGate.Domain.Enums;
+using PaymentGate.Domain.Entities;
+using PaymentGate.Domain.ValueObjects;
 using PaymentGateway.Persistence;
 
-namespace PaymentGate.Application.Services
+public class WalletExchangeService: IWalletExchangeService
 {
-    public class WalletExchangeService :IWalletExchangeService
+    private readonly PaymentGatewayDbCOntext _db;
+    private readonly IFxService _fx;
+    private readonly IFeePolicy _feePolicy;
+
+    public WalletExchangeService(
+        PaymentGatewayDbCOntext db,
+        IFxService fx,
+        IFeePolicy feePolicy)
     {
-        private readonly PaymentGatewayDbCOntext _context;
-        private readonly IFxService _fxService;
+        _db = db;
+        _fx = fx;
+        _feePolicy = feePolicy;
+    }
 
-        public WalletExchangeService(PaymentGatewayDbCOntext context, IFxService fxService)
+    public async Task ExchangeAsync(
+        Guid userId,
+        Guid fromWalletId,
+        Guid toWalletId,
+        decimal amount)
+    {
+        using var tr = await _db.Database.BeginTransactionAsync();
+
+        try
         {
-            _context = context;
-            _fxService = fxService;
+            var from = await _db.Wallets.FirstOrDefaultAsync(w => w.WalletId == fromWalletId);
+            var to = await _db.Wallets.FirstOrDefaultAsync(w => w.WalletId == toWalletId);
+
+            if (from == null || to == null)
+                throw new Exception("Wallet not found");
+
+            if (from.UserId != userId || to.UserId != userId)
+                throw new Exception("Wallet ownership mismatch");
+
+            if(from.Currency == to.Currency)
+                throw new Exception("Please use transfer for same currency exchange");
+
+            //fx quote
+            FxQuote quote = await _fx.QuoteAsync(from.Currency, to.Currency, amount);
+
+            //fee calculation
+
+            var feeResult = _feePolicy.Calculate(amount, from.Currency);
+
+            if(from.Balance < feeResult.TotalDebit)
+                throw new Exception("Insufficient balance");
+
+            
+            //Create Exchange
+
+            var exchange = new FxExchange (
+                userId,
+                fromWalletId,
+                toWalletId,
+                amount,
+                quote.ConvertedAmount,
+                quote.Rate,
+                feeResult.Fee,
+                from.Currency,
+                to.Currency);
+
+
         }
-
-        public async Task ExchangeAsync(Guid userId, string fromCurrency, string toCurrency, decimal amount)
+        catch (Exception)
         {
-            if (amount <= 0)
-                throw new Exception("Amount can't be zero(0)");
-
-            using var tx = await _context.Database.BeginTransactionAsync();
-
-            var source = await _context.Wallets.FirstOrDefaultAsync(x => x.UserId == userId && x.Currency == fromCurrency);
-
-            if (source == null)
-                throw new Exception("Source Wallet not found");
-
-            var destination = await _context.Wallets.FirstOrDefaultAsync(X => X.UserId == userId && X.Currency == toCurrency);
-
-            if (destination == null)
-                throw new Exception("Destination wallet not found");
-
-            var qoute = await _fxService.QuoteAsync(fromCurrency, toCurrency, amount);
-
-            source.Debit(amount);
-            destination.Credit(qoute.ToAmount);
-
-            var debitTx = new Transaction(
-            source.WalletId,
-            transferId: Guid.NewGuid(),
-            amount,
-            fromCurrency,
-            TransactionType.Debit,
-            "FX-DEBIT"
-        );
-            debitTx.MarkAsCompleted();
-
-            var creditTx = new Transaction(
-                destination.WalletId,
-                transferId: debitTx.TransferId,
-                qoute.ToAmount,
-                toCurrency,
-                TransactionType.Credit,
-                "FX-CREDIT");
-
-            creditTx.MarkAsCompleted();
-
-            _context.Transactions.AddRange(debitTx, creditTx);
-            await _context.SaveChangesAsync();
-
-            await tx.CommitAsync();
-
+            await tr.RollbackAsync();
+            throw;
         }
     }
 }

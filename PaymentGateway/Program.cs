@@ -12,8 +12,11 @@ builder.Services.AddScoped<ITransferInterface, TransferServices>();
 builder.Services.AddScoped<IFraudPolicy, BasicFraudPolicy>();
 builder.Services.AddScoped<IFeePolicy, TieredFeePolicy>();
 builder.Services.AddScoped<ILimitPolicy, UserLimitPolicy>();
-builder.Services.AddScoped<IWalletService, WalletService> ();
-builder.Services.AddScoped<IFxService, OpenErFxService>();
+builder.Services.AddScoped<IWalletService, WalletService>();
+
+// Register IFxService with an HttpClient so OpenErFxService can be activated
+builder.Services.AddHttpClient<IFxService, OpenErFxService>();
+
 builder.Services.AddScoped<IWalletExchangeService, WalletExchangeService>();
 
 //Db contection

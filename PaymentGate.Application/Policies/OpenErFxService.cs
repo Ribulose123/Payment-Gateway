@@ -1,12 +1,9 @@
 ﻿using Microsoft.Extensions.Options;
+using PaymentGate.Domain.ValueObjects;
 using PaymentGate.Application.DTO;
 using PaymentGate.Application.Interface;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http.Json;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace PaymentGate.Application.Policies
 {
@@ -36,7 +33,7 @@ namespace PaymentGate.Application.Policies
             var rate = response.Rates[to];
             var convert = Math.Round(amount * rate, 2);
 
-            return
+            return new FxQuote(rate, convert);
 
         }
     }

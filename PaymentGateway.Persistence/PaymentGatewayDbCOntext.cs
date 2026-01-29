@@ -35,5 +35,6 @@ namespace PaymentGateway.Persistence
         public DbSet<Reversal> Reversals { get; set; }
         public DbSet<Idempotency> Idempotencies { get; set; }
         public DbSet<AuditLog> AuditLogs { get; set; }
+        public DbSet<FxExchange> FxExchanges { get; set; }
     }
 }

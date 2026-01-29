@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿
 
 namespace PaymentGate.Application.Interface
 {
@@ -10,8 +6,8 @@ namespace PaymentGate.Application.Interface
     {
         Task ExchangeAsync(
             Guid userId,
-            string fromCurrency,
-            string toCurrency,
+            Guid fromWalletId,
+            Guid toWalletId,
             decimal amount);
     }
 
