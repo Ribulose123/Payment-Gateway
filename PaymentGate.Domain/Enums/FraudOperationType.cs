@@ -5,6 +5,7 @@ namespace PaymentGate.Domain.Enums
     public enum FraudOperationType
     {
         Transfer,
-        Reversal
+        Reversal,
+        FxExchange
     }
 }

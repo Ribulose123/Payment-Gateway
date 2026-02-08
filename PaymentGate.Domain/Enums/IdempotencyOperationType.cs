@@ -11,6 +11,7 @@ namespace PaymentGate.Domain.Enums
         Transfer,
         Reversal,
         WalletCredit,
-        WalletDebit
+        WalletDebit,
+        FxExchange
     }
 }
