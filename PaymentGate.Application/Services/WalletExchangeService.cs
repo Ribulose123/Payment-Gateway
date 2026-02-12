@@ -44,7 +44,11 @@ public class WalletExchangeService: IWalletExchangeService
         {
             // 🔁 Idempotency check
             idem = await _db.Idempotencies
-                .FirstOrDefaultAsync(i => i.Key == dto.IdempotencyKey);
+               .FirstOrDefaultAsync(i =>
+                   i.Key == dto.IdempotencyKey
+                   && i.OperationType == IdempotencyOperationType.FxExchange
+                   && i.ClientId == dto.InitiatorId
+                   && i.ExpirationAt > DateTime.UtcNow);
 
             if (idem != null)
             {

@@ -48,7 +48,11 @@ namespace PaymentGate.Application.Services
             {
                 // 1️⃣ Idempotency check
                 idem = await _context.Idempotencies
-                    .FirstOrDefaultAsync(x => x.Key == request.IdempotencyKey);
+                .FirstOrDefaultAsync(i =>
+                    i.Key == request.IdempotencyKey
+                    && i.OperationType == IdempotencyOperationType.Transfer
+                    && i.ClientId == request.InitiatorId
+                    && i.ExpirationAt > DateTime.UtcNow);
 
                 if (idem != null)
                 {

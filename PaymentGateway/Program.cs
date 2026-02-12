@@ -10,6 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<FxApiSettings>(builder.Configuration.GetSection("FxApi"));
 builder.Services.AddScoped<ITransferInterface, TransferServices>();
 builder.Services.AddScoped<IFraudPolicy, BasicFraudPolicy>();
+builder.Services.AddScoped<IFxFraudPolicy, BasicFxFraudPolicy>();
 builder.Services.AddScoped<IFeePolicy, TieredFeePolicy>();
 builder.Services.AddScoped<ILimitPolicy, UserLimitPolicy>();
 builder.Services.AddScoped<IWalletService, WalletService>();

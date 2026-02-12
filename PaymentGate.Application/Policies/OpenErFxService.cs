@@ -1,40 +1,45 @@
-﻿using Microsoft.Extensions.Options;
-using PaymentGate.Domain.ValueObjects;
+﻿using System;
+using System.Net.Http.Json;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 using PaymentGate.Application.DTO;
 using PaymentGate.Application.Interface;
-using System.Net.Http.Json;
-
+using PaymentGate.Domain.ValueObjects;
 
 namespace PaymentGate.Application.Policies
 {
-    public class OpenErFxService:IFxService
+    public class OpenErFxService : IFxService
     {
-        public readonly HttpClient _httpClient;
-        public readonly FxApiSettings _baseUrl;
+        private readonly HttpClient _httpClient;
+        private readonly FxApiSettings _settings;
 
-        public OpenErFxService(HttpClient httpClient, IOptions<FxApiSettings>options)
+        public OpenErFxService(HttpClient httpClient, IOptions<FxApiSettings> options)
         {
             _httpClient = httpClient;
-            _baseUrl = options.Value;
+            _settings = options.Value;
         }
 
         public async Task<FxQuote> QuoteAsync(string from, string to, decimal amount)
         {
-            var url = $"{_baseUrl.BaseUrl}{from}";
+            if (string.Equals(from, to, StringComparison.OrdinalIgnoreCase))
+                return new FxQuote(1m, Math.Round(amount, 2));
+
+            var baseUrl = (_settings.BaseUrl ?? "").TrimEnd('/');
+            var fromCode = from.ToUpperInvariant();
+            var toCode = to.ToUpperInvariant();
+
+            var url = $"{baseUrl}/{fromCode}";
 
             var response = await _httpClient.GetFromJsonAsync<FxApiRequest>(url);
 
             if (response == null)
                 throw new Exception("FX service unavailable");
 
-            if (!response.Rates.ContainsKey(to))
-                throw new Exception("Currency not supported");
+            if (!response.Rates.TryGetValue(toCode, out var rate))
+                throw new Exception($"Currency '{toCode}' not supported for base '{fromCode}'.");
 
-            var rate = response.Rates[to];
-            var convert = Math.Round(amount * rate, 2);
-
-            return new FxQuote(rate, convert);
-
+            var converted = Math.Round(amount * rate, 2);
+            return new FxQuote(rate, converted);
         }
     }
 }
