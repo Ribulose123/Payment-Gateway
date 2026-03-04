@@ -6,13 +6,10 @@ using System.Threading.Tasks;
 
 namespace PaymentGate.Domain.Enums
 {
-    public enum IdempotencyOperationType
+    public enum FxTransferStatus
     {
-        Transfer,
-        Reversal,
-        WalletCredit,
-        WalletDebit,
-        FxExchange,
-        FxTransfer
-    }
+        Pending,
+        Success,
+        Failed,
+	}
 }

@@ -12,6 +12,7 @@ namespace PaymentGate.Application.DTO
         public Guid FromWalletId { get; set; }
         public Guid ToWalletId { get; set; }
         public decimal Amount { get; set; }
+        public string Currency { get; set; } = string.Empty;
 
         public Guid IdempotencyKey { get; set; }
         public Guid InitiatorId { get; set; }

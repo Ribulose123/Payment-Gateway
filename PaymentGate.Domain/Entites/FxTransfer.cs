@@ -4,9 +4,10 @@ using PaymentGate.Domain.Enums;
 
 namespace PaymentGate.Domain.Entites
 {
-    public class FxTransfere
+    public class FxTransfer
     {
-        public Guid FxTransfereId { get; private set; }
+        public Guid Id { get; private set; }
+
         public Guid SourceId { get; private set; }
         public Guid DestinationId { get; private set; }
         public decimal FromAmount { get; private set; }
@@ -17,11 +18,14 @@ namespace PaymentGate.Domain.Entites
         public string FromCurrency { get; private set; } = string.Empty;
         public string ToCurrency { get; private set; } = string.Empty;
         public FxTransfereStatus Status { get; private set; } = FxTransfereStatus.Pending;
+        public string? Description { get; private set; }
+        public string? DebitTransactionReference { get; private set; }
+        public string? CreditTransactionReference { get; private set; }
         public DateTime CreatedAt { get; private set; }
 
-        private FxTransfere() { }
+        private FxTransfer() { }
 
-        public FxTransfere(
+        public FxTransfer(
             Guid sourceId,
             Guid destinationId,
             decimal fromAmount,
@@ -39,7 +43,7 @@ namespace PaymentGate.Domain.Entites
                 throw new Exception("From currency is required");
             if (string.IsNullOrWhiteSpace(toCurrency))
                 throw new Exception("To currency is required");
-            FxTransfereId = Guid.NewGuid();
+            Id = Guid.NewGuid();
             SourceId = sourceId;
             DestinationId = destinationId;
             FromAmount = fromAmount;
@@ -58,7 +62,7 @@ namespace PaymentGate.Domain.Entites
             Status = FxTransfereStatus.Success;
         }
 
-        public void MarkAsFailed()
+        public void MarkAsFailed(string v)
         {
             if (Status != FxTransfereStatus.Pending)
                 throw new Exception("Only pending FX transfers can be failed");
@@ -66,5 +70,42 @@ namespace PaymentGate.Domain.Entites
 
 
         }
+
+        public void MarkSuccess(string debitRef, string creditRef)
+        {
+            EnsurePending();
+
+            DebitTransactionReference = debitRef
+                ?? throw new ArgumentNullException(nameof(debitRef));
+
+            CreditTransactionReference = creditRef
+                ?? throw new ArgumentNullException(nameof(creditRef));
+
+            Status = FxTransfereStatus.Success;
+        }
+
+        public void MarkFailed(string? reason = null)
+        {
+            EnsurePending();
+
+            if (!string.IsNullOrWhiteSpace(reason))
+                Description = reason;
+
+            Status = FxTransfereStatus.Failed;
+        }
+
+        public void MarkPendingReview(string reason)
+        {
+            EnsurePending();
+            Description = reason;
+        }
+
+
+        private void EnsurePending()
+        {
+            if (Status != FxTransfereStatus.Pending)
+                throw new InvalidOperationException("Only pending transfers can change status.");
+        }
+
     }
 }
