@@ -8,7 +8,6 @@ namespace PaymentGate.Application.DTO
 {
     public class FxTransferRequestDto
     {
-        public Guid UserId { get; set; }
         public Guid FromWalletId { get; set; }
         public Guid ToWalletId { get; set; }
         public decimal Amount { get; set; }
@@ -17,6 +16,14 @@ namespace PaymentGate.Application.DTO
         public Guid IdempotencyKey { get; set; }
         public Guid InitiatorId { get; set; }
         public string? Description { get; set; }
-        public string RequsetHash { get; private set; } = string.Empty;
+        public string RequestHash { get; set; } = string.Empty;
+
+        public void ComputeHash()
+        {
+            var raw = $"{InitiatorId}|{FromWalletId}|{ToWalletId}|{Amount}|{Currency}|{IdempotencyKey}";
+            using var sha = System.Security.Cryptography.SHA256.Create();
+            var bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(raw));
+            RequestHash = Convert.ToHexString(bytes);
+        }
     }
 }

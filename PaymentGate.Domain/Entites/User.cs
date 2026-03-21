@@ -40,7 +40,7 @@ namespace PaymentGate.Domain.Entites
 
         public void ResetDailyLimit()
         {
-            if(LastLimitResetUtc.Date !=  DateTime.UtcNow)
+            if(LastLimitResetUtc.Date !=  DateTime.UtcNow.Date)
             {
                 DailyLimitUsed = 0;
                 LastLimitResetUtc = DateTime.UtcNow;

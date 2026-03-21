@@ -2,11 +2,13 @@ using Microsoft.EntityFrameworkCore;
 using PaymentGate.Application.Interface;
 using PaymentGate.Application.Policies;
 using PaymentGate.Application.Services;
+using PaymentGateway.BackgroundServices;
 using PaymentGateway.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddHostedService<LimitResetBackgroundService>();
 builder.Services.Configure<FxApiSettings>(builder.Configuration.GetSection("FxApi"));
 builder.Services.AddScoped<ITransferInterface, TransferServices>();
 builder.Services.AddScoped<IFraudPolicy, BasicFraudPolicy>();
@@ -14,6 +16,7 @@ builder.Services.AddScoped<IFxFraudPolicy, BasicFxFraudPolicy>();
 builder.Services.AddScoped<IFeePolicy, TieredFeePolicy>();
 builder.Services.AddScoped<ILimitPolicy, UserLimitPolicy>();
 builder.Services.AddScoped<IWalletService, WalletService>();
+builder.Services.AddScoped<IFxTransfer, FxTransfereServices>();
 
 // Register IFxService with an HttpClient so OpenErFxService can be activated
 builder.Services.AddHttpClient<IFxService, OpenErFxService>();

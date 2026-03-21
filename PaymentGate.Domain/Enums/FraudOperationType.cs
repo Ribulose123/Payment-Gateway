@@ -6,6 +6,7 @@ namespace PaymentGate.Domain.Enums
     {
         Transfer,
         Reversal,
-        FxExchange
+        FxExchange,
+        FxTransfer
     }
 }

@@ -19,9 +19,6 @@ namespace PaymentGate.Application.DTO
         public decimal Fee { get; set; }
         public string? FailureReason { get; set; }
         public string Status { get; set; } = string.Empty;
-        public Guid? DebitTransactionId { get; set; }
-        public Guid? CreditTransactionId { get; set; }
-        public DateTime CreateAt { get; set; }
 
         // Factory for Pending Review
 
@@ -32,7 +29,6 @@ namespace PaymentGate.Application.DTO
                 FxTransferId = transferId,
                 Status = FxEchangeStatus.Pending.ToString(),
                 FailureReason = "Transfer pending fraud review",
-                CreateAt = DateTime.UtcNow
             };
         }
     }

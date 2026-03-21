@@ -11,29 +11,41 @@ namespace PaymentGate.Application.Services
             Wallet source,
             Wallet destination)
         {
-            // Hard rule: unusually large transfers
             if (transfer.Amount > 1_000_000)
-            {
                 return FraudEvaluationResult.Rejected(
                     riskScore: 95,
-                    reason: "Transfer amount exceeds fraud threshold"
-                );
-            }
+                    reason: "Transfer amount exceeds fraud threshold");
 
-            // Medium risk: large but acceptable
             if (transfer.Amount > 100_000)
-            {
                 return FraudEvaluationResult.Review(
                     riskScore: 70,
-                    reason: "High value transfer requires manual review"
-                );
-            }
+                    reason: "High value transfer requires manual review");
 
-            // Low risk
             return FraudEvaluationResult.Approved(
                 riskScore: 10,
-                reason: "Low risk transfer"
-            );
+                reason: "Low risk transfer");
+        }
+
+        // ✅ FIX: Implement instead of throwing
+        public FraudEvaluationResult Evaluate(
+            FxTransfer transfer,
+            Wallet source,
+            Wallet destination)
+        {
+            // ✅ Use FromAmount since FxTransfer has no single Amount property
+            if (transfer.FromAmount > 1_000_000)
+                return FraudEvaluationResult.Rejected(
+                    riskScore: 95,
+                    reason: "FX transfer amount exceeds fraud threshold");
+
+            if (transfer.FromAmount > 100_000)
+                return FraudEvaluationResult.Review(
+                    riskScore: 70,
+                    reason: "High value FX transfer requires manual review");
+
+            return FraudEvaluationResult.Approved(
+                riskScore: 10,
+                reason: "Low risk FX transfer");
         }
     }
 }
