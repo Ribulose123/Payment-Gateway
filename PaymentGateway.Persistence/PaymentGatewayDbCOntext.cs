@@ -37,5 +37,6 @@ namespace PaymentGateway.Persistence
         public DbSet<AuditLog> AuditLogs { get; set; }
         public DbSet<FxExchange> FxExchanges { get; set; }
         public DbSet<FxTransfer> FxTransfers { get; set; }
+        public DbSet <ScheduledTransfer> ScheduledTransfers { get; set; }
     }
 }

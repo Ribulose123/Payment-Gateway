@@ -13,6 +13,7 @@ namespace PaymentGate.Domain.Enums
         WalletCredit,
         WalletDebit,
         FxExchange,
-        FxTransfer
+        FxTransfer, 
+        ScheduledTransfer,
     }
 }

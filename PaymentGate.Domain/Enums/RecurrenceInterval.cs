@@ -6,11 +6,12 @@ using System.Threading.Tasks;
 
 namespace PaymentGate.Domain.Enums
 {
-    public enum TransferStatus
+    public enum RecurrenceInterval
     {
-        Pending,
-        Success,
-        Failed,
-        Cancelled
+        None,
+        Minutes,
+        Daily,
+        Weekly,
+        Monthly,
     }
 }

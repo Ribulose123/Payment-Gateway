@@ -6,6 +6,7 @@ namespace PaymentGate.Domain.Enums
     {
         Pending,
         Completed,
-        Failed
+        Failed,
+        
     }
 }

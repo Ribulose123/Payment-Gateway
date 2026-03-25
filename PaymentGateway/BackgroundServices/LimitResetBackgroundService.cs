@@ -1,8 +1,8 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using PaymentGateway.Persistence;
-using Microsoft.EntityFrameworkCore;
 
 namespace PaymentGateway.BackgroundServices
 {
@@ -30,21 +30,20 @@ namespace PaymentGateway.BackgroundServices
                     using var scope = _scopeFactory.CreateScope();
                     var db = scope.ServiceProvider.GetRequiredService<PaymentGatewayDbCOntext>();
 
-                    var userToReset = await db.Users.Where(x => x.LastLimitResetUtc.Date < DateTime.UtcNow.Date).ToListAsync(stoppingToken);
+                    var usersToReset = await db.Users
+                        .Where(x => x.LastLimitResetUtc.Date < DateTime.UtcNow.Date)
+                        .ToListAsync(stoppingToken);
 
-
-                    if (userToReset.Any())
+                    if (usersToReset.Any())
                     {
-                        foreach(var user in userToReset)
-                        {
+                        foreach (var user in usersToReset)
                             user.ResetDailyLimit();
-                        }
-                        await db.SaveChangesAsync(stoppingToken);
 
+                        await db.SaveChangesAsync(stoppingToken);
 
                         _logger.LogInformation(
                             "Reset daily limits for {count} users at {time}",
-                            userToReset.Count,
+                            usersToReset.Count,
                             DateTimeOffset.UtcNow);
                     }
                     else
@@ -53,13 +52,12 @@ namespace PaymentGateway.BackgroundServices
                             DateTimeOffset.UtcNow);
                     }
 
-                    var now =DateTime.UtcNow;
-                    var nextMidNight = now.Date.AddDays(1);
-                    var delay = nextMidNight - now;
-                    // TODO: your logic here e.g. reset daily limits
-                    _logger.LogInformation("Running limit reset at: {time}", DateTimeOffset.UtcNow);
+                    // Sleep until next UTC midnight
+                    var now = DateTime.UtcNow;
+                    var nextMidnight = now.Date.AddDays(1);
+                    var delay = nextMidnight - now;
 
-
+                    _logger.LogInformation("Next limit reset in {delay}", delay);
                     await Task.Delay(delay, stoppingToken);
                 }
                 catch (OperationCanceledException)
@@ -68,9 +66,7 @@ namespace PaymentGateway.BackgroundServices
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error occurred in LimitResetBackgroundService.");
-
-                    
+                    _logger.LogError(ex, "Error in LimitResetBackgroundService.");
                     await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);
                 }
             }

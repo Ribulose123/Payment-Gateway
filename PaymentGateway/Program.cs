@@ -9,6 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddHostedService<LimitResetBackgroundService>();
+builder.Services.AddHostedService<ScheduledTransferBackgroundService>();
 builder.Services.Configure<FxApiSettings>(builder.Configuration.GetSection("FxApi"));
 builder.Services.AddScoped<ITransferInterface, TransferServices>();
 builder.Services.AddScoped<IFraudPolicy, BasicFraudPolicy>();
@@ -17,6 +18,7 @@ builder.Services.AddScoped<IFeePolicy, TieredFeePolicy>();
 builder.Services.AddScoped<ILimitPolicy, UserLimitPolicy>();
 builder.Services.AddScoped<IWalletService, WalletService>();
 builder.Services.AddScoped<IFxTransfer, FxTransfereServices>();
+builder.Services.AddScoped<IScheduleTransfer, ScheduleTransferServices>();
 
 // Register IFxService with an HttpClient so OpenErFxService can be activated
 builder.Services.AddHttpClient<IFxService, OpenErFxService>();
