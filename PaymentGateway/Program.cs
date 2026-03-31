@@ -4,6 +4,7 @@ using PaymentGate.Application.Policies;
 using PaymentGate.Application.Services;
 using PaymentGateway.BackgroundServices;
 using PaymentGateway.Persistence;
+using Paystack;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddHostedService<LimitResetBackgroundService>();
 builder.Services.AddHostedService<ScheduledTransferBackgroundService>();
 builder.Services.Configure<FxApiSettings>(builder.Configuration.GetSection("FxApi"));
+builder.Services.Configure<PaystackOptions>(builder.Configuration.GetSection("Paystack"));
 builder.Services.AddScoped<ITransferInterface, TransferServices>();
 builder.Services.AddScoped<IFraudPolicy, BasicFraudPolicy>();
 builder.Services.AddScoped<IFxFraudPolicy, BasicFxFraudPolicy>();
