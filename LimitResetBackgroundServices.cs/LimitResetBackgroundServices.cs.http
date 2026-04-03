@@ -1,6 +1,0 @@
-@LimitResetBackgroundServices.cs_HostAddress = http://localhost:5279
-
-GET {{LimitResetBackgroundServices.cs_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
