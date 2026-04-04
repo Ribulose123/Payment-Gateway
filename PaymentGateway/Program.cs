@@ -22,8 +22,10 @@ builder.Services.AddScoped<IWalletService, WalletService>();
 builder.Services.AddScoped<IFxTransfer, FxTransfereServices>();
 builder.Services.AddScoped<IScheduleTransfer, ScheduleTransferServices>();
 
-// Register IFxService with an HttpClient so OpenErFxService can be activated
 builder.Services.AddHttpClient<IFxService, OpenErFxService>();
+
+// Register concrete PaystackService implementation (PaystackService lives in PaymentGate.Application.Services)
+builder.Services.AddHttpClient<IPaystackService, PaystackService>();
 
 builder.Services.AddScoped<IWalletExchangeService, WalletExchangeService>();
 
@@ -33,15 +35,11 @@ builder.Services.AddDbContext<PaymentGatewayDbCOntext>(option => option.UseSqlSe
 // To serialize enum as string in json response
 builder.Services.AddControllers().AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter()));
 
-
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -49,9 +47,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.Run();
