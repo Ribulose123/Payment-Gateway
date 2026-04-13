@@ -18,5 +18,9 @@ namespace PaymentGate.Application.Interface
              InitiateTransferRequestDto request);
         Task<VirtualAccountResponseDto> CreateVirtualAccountAsync(
             CreateVirtualAccountRequestDto request);
+
+        Task<List<BankDto>> GetBanksAsync();
+
+        Task<FinalizeResponseDto> FinalizeTransferAsAsync(FinalizeTransferRequestDto request);
     }
 }

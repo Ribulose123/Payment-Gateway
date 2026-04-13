@@ -16,6 +16,8 @@ namespace PaymentGateway.Controllers
             _paystackService = paystackService;
         }
 
+      
+
         [HttpPost("initialize")]
 
         public async Task<IActionResult> InitializePayment([FromBody] InitializePaymentRequestDto request)
@@ -47,6 +49,14 @@ namespace PaymentGateway.Controllers
             return Ok(response);
         }
 
+        [HttpPost("Otp")]
+        public async Task<IActionResult> FinalizeTransfer([FromBody] FinalizeTransferRequestDto request)
+        {
+            var response = await _paystackService.FinalizeTransferAsAsync(request);
+            return Ok(response);
+        }
+
+
         [HttpPost("virtual-account")]
         public async Task<IActionResult> CreateVirtualAccount(
            [FromBody] CreateVirtualAccountRequestDto request)
@@ -54,5 +64,16 @@ namespace PaymentGateway.Controllers
             var response = await _paystackService.CreateVirtualAccountAsync(request);
             return Ok(response);
         }
+
+        [HttpGet ("get-banks")]
+        public async Task<IActionResult> GetBanks()
+        {
+            var response = await _paystackService.GetBanksAsync();
+            return Ok(response);
+        }
+
+       
+
     }
+
 }
