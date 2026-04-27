@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using PaymentGate.Application.DTO;
 using PaymentGate.Application.Interface;
 using PaymentGate.Domain.Entites;
@@ -6,7 +6,7 @@ using PaymentGate.Domain.Enums;
 using PaymentGateway.Persistence;
 using System.Text.Json;
 
-namespace PaymentGate.Application.Services
+namespace PaymentGateway.Persistence.Services
 {
     public class ScheduleTransferServices : IScheduleTransfer
     {
@@ -162,7 +162,7 @@ namespace PaymentGate.Application.Services
             return MapToResponse(transfer);
         }
 
-        // ✅ NEW: Cancel a scheduled transfer
+        // ? NEW: Cancel a scheduled transfer
         public async Task CancelAsync(Guid scheduleTransferId, Guid initiatorId)
         {
             var transfer = await _content.ScheduledTransfers

@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using PaymentGate.Application.DTO;
 using PaymentGate.Application.Interface;
 using PaymentGate.Domain.Entites;
@@ -8,7 +8,7 @@ using PaymentGate.Domain.ValueObjects;
 using PaymentGateway.Persistence;
 using System.Text.Json;
 
-namespace PaymentGate.Application.Services
+namespace PaymentGateway.Persistence.Services
 {
     public class FxTransfereServices : IFxTransfer
     {
@@ -100,7 +100,7 @@ namespace PaymentGate.Application.Services
 
                 _limitPolicy.Validate(user, requestDto.Amount);
 
-                // FX quote — skip FX service for same currency
+                // FX quote � skip FX service for same currency
                 FxQuote quote;
                 if (source.Currency == destination.Currency)
                     quote = new FxQuote(rate: 1m, convertedAmount: requestDto.Amount);
@@ -167,7 +167,7 @@ namespace PaymentGate.Application.Services
                     };
                 }
 
-                // ✅ Debit source wallet
+                // ? Debit source wallet
                 source.Debit(fee.TotalDebit);
 
                 var debitTx = new Transaction(
@@ -178,7 +178,7 @@ namespace PaymentGate.Application.Services
                     type: TransactionType.Debit,
                     reference: Guid.NewGuid().ToString());
 
-                // ✅ Credit destination wallet
+                // ? Credit destination wallet
                 destination.Credit(quote.ConvertedAmount);
 
                 var creditTx = new Transaction(

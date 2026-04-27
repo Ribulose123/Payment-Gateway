@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using PaymentGate.Application.Interface;
 using PaymentGate.Domain.Entites;
 using PaymentGateway.Persistence;
@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PaymentGate.Application.Services
+namespace PaymentGateway.Persistence.Services
 {
     public class WalletService:IWalletService
     {

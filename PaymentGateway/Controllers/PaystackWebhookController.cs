@@ -41,6 +41,7 @@ namespace PaymentGateway.Controllers
                 leaveOpen: true);
 
             var body = await reader.ReadToEndAsync();
+            
 
             
             if (string.IsNullOrWhiteSpace(body))
@@ -64,6 +65,12 @@ namespace PaymentGateway.Controllers
 
             if (eventType == "charge.success")
                 await HandleChargeSuccess(root);
+
+            if (eventType == "transfer.success")
+                await HandleTransferSuccess(root);
+
+            if (eventType == "transfer.failed")
+                await HandleTransferFailed(root);
 
             return Ok();
         }
@@ -145,6 +152,80 @@ namespace PaymentGateway.Controllers
             }
         }
 
+        private async Task HandleTransferSuccess (JsonElement root)
+        {
+            try
+            {
+                var data = root.GetProperty("data");
+                var reference = data.GetProperty("reference").GetString()!;
+
+                var withdrawalRecord = await _context.WithdrawalRequests.FirstOrDefaultAsync(i => i.Reference == reference);
+
+                if(withdrawalRecord == null)
+                {
+                    _logger.LogWarning("No withdrawal found for reference {ref}", reference);
+                    return;
+                }
+
+                withdrawalRecord.MarkSuccess();
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation(
+            "Withdrawal {ref} completed successfully.", reference);
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing transfer.success webhook.");
+            }
+        }
+
+        private async Task HandleTransferFailed (JsonElement root)
+        {
+            try
+            {
+                var data = root.GetProperty("data");
+                var reference = data.GetProperty("reference").GetString()!;
+                var reason = data.TryGetProperty("reason", out var r) ? r.GetString() : "Transfer failed";
+
+                var withdrawal = await _context.WithdrawalRequests
+           .FirstOrDefaultAsync(w => w.Reference == reference);
+
+                if (withdrawal == null)
+                    return;
+
+                var wallet = await _context.Wallets
+           .FirstOrDefaultAsync(w => w.WalletId == withdrawal.WalletId);
+
+                if (wallet != null)
+                {
+                    wallet.Credit(withdrawal.Amount);
+
+                    var refundTx = new Transaction(
+                        walletId: wallet.WalletId,
+                        transferId: Guid.Empty,
+                        amount: withdrawal.Amount,
+                        currency: wallet.Currency,
+                        type: TransactionType.Credit,
+                        reference: $"REFUND-{reference}");
+
+                    refundTx.MarkAsCompleted();
+                    _context.Transactions.Add(refundTx);
+                }
+
+                withdrawal.MarkFailed(reason ?? "Transfer failed");
+                await _context.SaveChangesAsync();
+
+                _logger.LogWarning(
+                    "Withdrawal {ref} failed. Wallet refunded.", reference);
+            } catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing transfer.failed webhook.");
+            }
+
+
+        }
         private bool IsValidSignature(string body, string? signature)
         {
             if (string.IsNullOrEmpty(signature))

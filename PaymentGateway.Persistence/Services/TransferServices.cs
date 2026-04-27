@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using PaymentGate.Application.Interface;
 using PaymentGate.Domain.DTO;
 using PaymentGate.Domain.Entites;
@@ -7,7 +7,7 @@ using PaymentGate.Domain.Enums;
 using PaymentGateway.Persistence;
 using System.Text.Json;
 
-namespace PaymentGate.Application.Services
+namespace PaymentGateway.Persistence.Services
 {
     public class TransferServices : ITransferInterface
     {
@@ -46,7 +46,7 @@ namespace PaymentGate.Application.Services
 
             try
             {
-                // 1️⃣ Idempotency check
+                // 1?? Idempotency check
                 idem = await _context.Idempotencies
                 .FirstOrDefaultAsync(i =>
                     i.Key == request.IdempotencyKey
@@ -69,7 +69,7 @@ namespace PaymentGate.Application.Services
                     throw new Exception("Transfer already processing");
                 }
 
-                // 2️⃣ Create idempotency
+                // 2?? Create idempotency
                 idem = new Idempotency(
                     request.InitiatorId,
                     request.IdempotencyKey,
@@ -88,7 +88,7 @@ namespace PaymentGate.Application.Services
 
                 _limitPolicy.Validate(user, request.Amount);
 
-                // 3️⃣ Load wallets
+                // 3?? Load wallets
                 var source = await _context.Wallets
                     .FirstOrDefaultAsync(x => x.WalletId == request.SourceWalletId);
 
@@ -107,7 +107,7 @@ namespace PaymentGate.Application.Services
                 if (source.Balance < feeResult.TotalDebit)
                     throw new Exception("Insufficient balance");
 
-                // 4️⃣ Create transfer
+                // 4?? Create transfer
                 var transfer = new Transfer(
                     source.WalletId,
                     destination.WalletId,
@@ -121,7 +121,7 @@ namespace PaymentGate.Application.Services
 
                 idem.AttachOperationReference(transfer.TransferId);
 
-                // 5️⃣ Fraud evaluation (decision stays OUTSIDE entity)
+                // 5?? Fraud evaluation (decision stays OUTSIDE entity)
                 var fraudResult = _fraudPolicy.Evaluate(
                     transfer, source, destination);
 
@@ -148,7 +148,7 @@ namespace PaymentGate.Application.Services
                     throw new Exception("Transfer rejected due to fraud");
                 }
 
-                // 6️⃣ Debit source wallet + transaction
+                // 6?? Debit source wallet + transaction
                 source.Debit(feeResult.TotalDebit);
 
                 var debitTx = new Transaction(
@@ -164,7 +164,7 @@ namespace PaymentGate.Application.Services
 
                 debitTx.MarkAsCompleted();
 
-                // 7️⃣ Credit destination wallet + transaction
+                // 7?? Credit destination wallet + transaction
                 destination.Credit(request.Amount);
 
                 var creditTx = new Transaction(
@@ -183,14 +183,14 @@ namespace PaymentGate.Application.Services
                 _context.Transactions.AddRange(debitTx, creditTx);
                 await _context.SaveChangesAsync();
 
-                // 8️⃣ Mark transfer success
+                // 8?? Mark transfer success
                 transfer.MarkSuccess(
                     debitTx.Reference,
                     creditTx.Reference);
 
                 await _context.SaveChangesAsync();
 
-                // 9️⃣ Response + idempotency snapshot
+                // 9?? Response + idempotency snapshot
                 var response = new TransferResponseDto
                 {
                     TransferId = transfer.TransferId,

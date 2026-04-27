@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using PaymentGate.Application.DTO;
 using PaymentGate.Application.DTO.Paystack;
 using PaymentGate.Application.Interface;
 
@@ -10,10 +11,12 @@ namespace PaymentGateway.Controllers
     public class PaystackController : ControllerBase
     {
         private readonly IPaystackService _paystackService;
+        private readonly IWithdrawalServices _withdrawalServices;
 
-        public PaystackController(IPaystackService paystackService)
+        public PaystackController(IPaystackService paystackService, IWithdrawalServices withdrawalServices)
         {
             _paystackService = paystackService;
+            _withdrawalServices = withdrawalServices;
         }
 
       
@@ -62,6 +65,14 @@ namespace PaymentGateway.Controllers
            [FromBody] CreateVirtualAccountRequestDto request)
         {
             var response = await _paystackService.CreateVirtualAccountAsync(request);
+            return Ok(response);
+        }
+
+        [HttpPost ("Withdrawl")]
+
+        public async Task<IActionResult> WithDraw([FromBody] WithdrawalRequestDto request)
+        {
+            var response = await _withdrawalServices.WithdrawalAsync(request);
             return Ok(response);
         }
 

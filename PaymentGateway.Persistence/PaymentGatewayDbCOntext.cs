@@ -38,5 +38,6 @@ namespace PaymentGateway.Persistence
         public DbSet<FxExchange> FxExchanges { get; set; }
         public DbSet<FxTransfer> FxTransfers { get; set; }
         public DbSet <ScheduledTransfer> ScheduledTransfers { get; set; }
+        public DbSet<WithdrawalRequest> WithdrawalRequests { get; set; }
     }
 }

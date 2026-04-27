@@ -9,6 +9,7 @@ namespace PaymentGate.Domain.Enums
     public enum IdempotencyOperationType
     {
         Transfer,
+        Withdrawal,
         Reversal,
         WalletCredit,
         WalletDebit,

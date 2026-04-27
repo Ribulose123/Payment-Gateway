@@ -1,4 +1,4 @@
-﻿using Azure.Core;
+using Azure.Core;
 using Microsoft.EntityFrameworkCore;
 using PaymentGate.Application.DTO;
 using PaymentGate.Application.Interface;
@@ -42,7 +42,7 @@ public class WalletExchangeService: IWalletExchangeService
 
         try
         {
-            // 🔁 Idempotency check
+            // ?? Idempotency check
             idem = await _db.Idempotencies
                .FirstOrDefaultAsync(i =>
                    i.Key == dto.IdempotencyKey
@@ -117,7 +117,7 @@ public class WalletExchangeService: IWalletExchangeService
 
             idem.AttachOperationReference(exchange.Id);
 
-            // 🛡 Fraud check
+            // ?? Fraud check
             var fraudResult = _fraudPolicy.Evaluate(exchange, from, to);
 
             var fraudCheck = new FraudCheck(
